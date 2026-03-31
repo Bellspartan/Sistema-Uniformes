@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="es">
+    <head>
+        <meta charset="UTF-8">
+        <title>Sistema de Uniformes</title>
+        <link rel="stylesheet" href="/static/style.css">
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    </head>
+
+    <body>
+
+        <div class="app">
+
+            <!-- SIDEBAR -->
+             <aside class="sidebar">
+                <h2>🧥 Uniformes</h2>
+                <a href="/">📦 Inventario</a>
+                <a href="/dashboard">📊 Dashboard</a>
+             </aside>
+
+             <!-- CONTENIDO -->
+              <main class="content">
+                  {% block content %}{% endblock %}
+              </main>
+        </div>
+    </body>
+</html>
