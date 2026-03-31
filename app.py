@@ -9,17 +9,24 @@ app = Flask(__name__)
 
 # Conexión DB
 def get_db():
-    conn = sqlite3.connect("/tmp/inventario.db")
-    conn.row_factory = sqlite3.Row
-    return conn
+    path = sqlite3.connect("/tmp/inventario.db")
+    first_time = not os.path.exists(path)
 
-# Crear DB automaticamente
-def init_db():
-    conn = get_db()
-    with open("database.sql", "r") as f:
-        conn.executescript(f.read())
-    conn.commit()
-    conn.close()
+    conn = sqlite3.connect(path)
+    conn.row_factory = sqlite3.Row
+
+    if first_time:
+        print("CREANDO BASE DE DATOS...")
+
+        BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+        sql_path = os.path.join(BASE_DIR, "database.sql")
+
+        with open(sql_path, "r") as f:
+            conn.executescript(f.read())
+
+        conn.commit()
+
+    return conn
 
 STOCK_MINIMO = 5
 # Ruta principal
@@ -204,8 +211,6 @@ def eliminar(id):
     return redirect("/")
 
 if __name__ == "__main__":
-    if not os.path.exists("inventario.db"):
-        init_db()
 
     port = int(os.environ.get("PORT", 10000))
     app.run(host="0.0.0.0", port=port)
