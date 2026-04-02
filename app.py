@@ -9,11 +9,36 @@ app = Flask(__name__)
 
 # Conexión DB
 def get_db():
-    path = sqlite3.connect("/tmp/inventario.db")
-    first_time = not os.path.exists(path)
+    db_path = "/tmp/inventario.db"
+    first_time = not os.path.exists(db_path)
 
-    conn = sqlite3.connect(path)
+    conn = sqlite3.connect(db_path)
     conn.row_factory = sqlite3.Row
+
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS productos (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            categoria TEXT,
+            modelo TEXT,
+            genero TEXT,
+            talla TEXT,
+            color TEXT,
+            cantidad INTEGER,
+            precio REAL
+        )
+        """)
+    
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS ventas (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            producto_id INTEGER,
+            cantidad INTEGER,
+            total REAL,
+            fecha TEXT
+        )
+        """)
+    
+    conn.commit()
 
     if first_time:
         print("CREANDO BASE DE DATOS...")
@@ -32,6 +57,8 @@ STOCK_MINIMO = 5
 # Ruta principal
 @app.route("/")
 def index():
+
+    print("ENTRANDO A INDEX")
     conn = get_db()
     productos = conn.execute("SELECT * FROM productos").fetchall()
 
@@ -43,11 +70,16 @@ def index():
 
         catalogo[clave][modelo].append(p)
     
-    ganancia_total = conn.execute("""
-            SELECT SUM(total) as total FROM ventas
-        """).fetchone()["total"]
 
-    ganancia_total = ganancia_total if ganancia_total else 0
+    try:
+        result = conn.execute("""
+            SELECT SUM(total) as total FROM ventas
+        """).fetchone()
+
+        ganancia_total = result["total"] if result["total"] else 0
+
+    except:
+        ganancia_total = 0
 
 
     # MÉTRICAS
